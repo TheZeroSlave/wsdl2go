@@ -163,6 +163,11 @@ func (c *Client) RoundTrip(in, out Message) error {
 
 // RoundTrip implements the RoundTripper interface.
 func (c *Client) RoundTripWithAction(soapAction string, in, out Message) error {
+	return c.RoundTripWithActionAndHeaders(soapAction, in, out, nil)
+}
+
+// RoundTrip implements the RoundTripper interface.
+func (c *Client) RoundTripWithActionAndHeaders(soapAction string, in, out Message, headers map[string]string) error {
 	headerFunc := func(r *http.Request) {
 		var actionName string
 		ct := c.ContentType
@@ -177,6 +182,9 @@ func (c *Client) RoundTripWithAction(soapAction string, in, out Message) error {
 				actionName = fmt.Sprintf("%s/%s", c.Namespace, soapAction)
 			}
 			r.Header.Add("SOAPAction", actionName)
+		}
+		for headerName, headerValue := range headers {
+			r.Header.Set(headerName, headerValue)
 		}
 	}
 	return doRoundTrip(c, headerFunc, in, out)
